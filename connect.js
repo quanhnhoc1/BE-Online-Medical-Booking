@@ -4,7 +4,7 @@ const config = {
   server: "THANITLO",
   user: "sa",
   password: "123123",
-  database: "ExpenseTracker",
+  database: "MSSQL_ONLINE_MEDICAL_BOOKING",
   options: {
     trustServerCertificate: true,
     enableArithAbort: true,
