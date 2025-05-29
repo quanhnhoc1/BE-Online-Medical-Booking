@@ -9,26 +9,19 @@ const {
 // connect database
 const { conn, sql, pool } = require("../connect");
 const app = express();
-const loginRouter = require("./routes/login.route");
+const userRoute = require("./routes/user.route");
+// const authRoute = require("./routes/auth.routes");
 app.use(cors());
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  res.json("welcome to my app");
-});
-
+// Remove the conflicting root route
 // app.get("/", async (req, res) => {
-//   try {
-//     await poolConnect; // đảm bảo kết nối đã được tạo
-//     const result = await pool.request().query("SELECT 1 AS result");
-//     res.json("asc");
-//   } catch (err) {
-//     console.error("SQL error", err);
-//     res.status(500).send("Database error");
-//   }
+//   res.json("welcome to my app");
 // });
 
-app.use("/login", loginRouter);
+app.use("/", userRoute);
+// app.use("/", authRoute);
+
 app.use(resourceNotFound);
 app.use(handleError);
 module.exports = app;
