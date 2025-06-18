@@ -1,4 +1,4 @@
-const makeUserServices = require("../services/user.services");
+const makeUserServices = require("../services/UserServices/user.services");
 const jwt = require("jsonwebtoken");
 const ApiError = require("../api-error");
 
@@ -14,7 +14,20 @@ async function createUser(req, res, next) {
   }
 }
 
-async function login(req, res) {
+async function getUserProfile(req, res, next) {
+  try {
+    const userServices = await makeUserServices();
+    const userID = parseInt(req.user.id, 10); // lấy từ token JWT
+    console.log(userID);
+    const profile = await userServices.getUserProfileServices(userID); // truyền vào đây
+    return res.status(200).json(profile);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+async function handleLogin(req, res) {
   try {
     const userServices = await makeUserServices();
 
@@ -22,25 +35,39 @@ async function login(req, res) {
 
     const userLoginResult = await userServices.userLogin(email, password);
 
-    // Handle login success or failure based on the service result
     if (userLoginResult.success) {
-      // If login is successful, generate JWT token
-      const user = userLoginResult.user; // Get user object from the service result
+      const user = userLoginResult.user;
       const token = jwt.sign(
         {
           id: user.ID,
+          fullname: user.FULL_NAME,
           email: user.EMAIL,
+          phone: user.PHONE,
+          address: user.ADDRESS,
+          gender: user.GENDER,
+          birthDate: user.BIRTHDATE,
           role: user.ROLE,
         },
         JWT_SECRET,
         { expiresIn: "1d" }
       );
+      console.log("Token generated:", token);
       // Return success message and token
-      return res
-        .status(200)
-        .json({ message: "Đăng nhập thành công", token, user: user }); // Optionally include user info
+      return res.status(200).json({
+        message: "Đăng nhập thành công",
+        token,
+        user: {
+          id: user.ID,
+          email: user.EMAIL,
+          fullName: user.FULL_NAME,
+          phone: user.PHONE,
+          address: user.ADDRESS,
+          gender: user.GENDER,
+          birthDate: user.BIRTH_DATE,
+          role: user.ROLE,
+        },
+      });
     } else {
-      // If login failed, return the failure message from the service
       return res.status(401).json(userLoginResult);
     }
   } catch (error) {
@@ -57,6 +84,7 @@ async function changePassword(req, res) {
 
 module.exports = {
   createUser,
-  login,
+  handleLogin,
   changePassword,
+  getUserProfile,
 };

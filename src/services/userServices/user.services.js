@@ -1,7 +1,25 @@
-const { pool, sql } = require("../../connect");
+const { pool, sql } = require("../../../connect");
 const bcrypt = require("bcrypt");
 
 async function makeUserServices() {
+  async function getUserProfileServices(userID) {
+    try {
+      const request = pool.request().input("UserID", sql.Int, userID);
+
+      const result = await request.query(
+        "EXEC GetUserProfileByID @UserID = @UserID;"
+      );
+
+      if (result.recordset.length === 0) {
+        throw new Error("User not found");
+      }
+
+      return result.recordset[0];
+    } catch (error) {
+      throw new Error(`Error fetching user profile: ${error.message}`);
+    }
+  }
+
   async function registerAccount(userPayload) {
     try {
       // Validate required fields
@@ -28,7 +46,7 @@ async function makeUserServices() {
         .input("Address", sql.NVarChar(200), userPayload.address || "");
 
       const result = await request.query(`
-        EXEC AddNewUser 
+        EXEC AddNewUser
         @FullName = @FullName,
         @Email = @Email,
         @Password = @Password,
@@ -53,9 +71,12 @@ async function makeUserServices() {
         .request()
         .input("Email", sql.VarChar(100), loginName);
 
-      const result = await request.query(
-        "SELECT * FROM accounts WHERE Email = @Email"
-      );
+      const result = await request.query(`
+          SELECT acc.*, up.PHONE, up.ADDRESS, up.GENDER, up.BIRTH_DATE
+          FROM accounts acc
+          LEFT JOIN USER_PROFILES up ON acc.ID = up.USER_ID
+          WHERE acc.Email = @Email
+        `);
 
       const user = result.recordset[0];
       if (!user) return { success: false, message: "Email không tồn tại" };
@@ -80,6 +101,7 @@ async function makeUserServices() {
     registerAccount,
     userLogin,
     changePassword,
+    getUserProfileServices,
   };
 }
 
