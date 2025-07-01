@@ -11,4 +11,8 @@ router
   .route("/get-hospitals-public")
   .get(hospitalsController.getHospitalsPublicController)
   .all(methodNotAllowed);
+router
+  .route("/get-specitalties-by-id/:hospitalID")
+  .get(hospitalsController.getSpecialtiesWithHospitalIDController)
+  .all(methodNotAllowed);
 module.exports = router;

@@ -22,7 +22,24 @@ async function getHospitalsPublicController(req, res, next) {
   }
 }
 
+async function getSpecialtiesWithHospitalIDController(req, res, next) {
+  const specialtiesWithHospitalID = await makeHospitalsServices();
+  try {
+    const { hospitalID } = req.params;
+    const result =
+      await specialtiesWithHospitalID.getSpecialtiesWithHospitalIDServices(
+        hospitalID
+      );
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
+
 module.exports = {
   getHospitalsPrivateController,
   getHospitalsPublicController,
+  getSpecialtiesWithHospitalIDController,
 };
