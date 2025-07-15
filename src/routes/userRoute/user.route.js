@@ -2,7 +2,7 @@ const express = require("express");
 const userController = require("../../controllers/user.controller");
 const { methodNotAllowed } = require("../../controllers/errors.controller");
 const { verifyToken } = require("../../middlewares/auth.Middlewares");
-
+const doctorController = require("../../controllers/doctor.controller");
 const router = express.Router();
 
 /**
@@ -102,9 +102,20 @@ router
  *       200:
  *         description: Hiển thị giao diện đổi mật khẩu (tùy backend xử lý gì)
  */
+router.route("/change-password").get(userController.changePassword);
+
 router
-  .route("/change-password")
-  .get(userController.changePassword)
+  .route("/get-schedule-by-doctor-id/:doctorID")
+  .get(doctorController.getScheduleController)
   .all(methodNotAllowed);
 
+router
+  .route("/add-appointment/:doctorID&:specialtyID")
+  .post(verifyToken, userController.addAppointmentByUserController)
+  .all(methodNotAllowed);
+
+router
+  .route("/update-profile")
+  .put(verifyToken, userController.updateUserProfile)
+  .all(methodNotAllowed);
 module.exports = router;

@@ -23,13 +23,29 @@ async function getHospitalsPublicController(req, res, next) {
 }
 
 async function getSpecialtiesWithHospitalIDController(req, res, next) {
-  const specialtiesWithHospitalID = await makeHospitalsServices();
+  const hospitalsServices = await makeHospitalsServices();
   try {
     const { hospitalID } = req.params;
     const result =
-      await specialtiesWithHospitalID.getSpecialtiesWithHospitalIDServices(
+      await hospitalsServices.getSpecialtiesWithHospitalIDServices(hospitalID);
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
+
+async function getDoctorFromSpecialtyIDServicesAndIDHospital(req, res, next) {
+  const hospitalsServices = await makeHospitalsServices();
+  try {
+    const { specialtyID, hospitalID } = req.params;
+    const result =
+      await hospitalsServices.getDoctorFromSpecialtyIDServicesAndIDHospital(
+        specialtyID,
         hospitalID
       );
+    console.log("specialtyID:", specialtyID, "hospitalID:", hospitalID);
 
     return res.status(200).json(result);
   } catch (err) {
@@ -42,4 +58,5 @@ module.exports = {
   getHospitalsPrivateController,
   getHospitalsPublicController,
   getSpecialtiesWithHospitalIDController,
+  getDoctorFromSpecialtyIDServicesAndIDHospital,
 };

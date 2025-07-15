@@ -12,7 +12,11 @@ router
   .get(hospitalsController.getHospitalsPublicController)
   .all(methodNotAllowed);
 router
-  .route("/get-specitalties-by-id/:hospitalID")
+  .route("/get-specialty-by-id/:hospitalID")
   .get(hospitalsController.getSpecialtiesWithHospitalIDController)
+  .all(methodNotAllowed);
+router
+  .route("/get-doctor-by-specialty-and-hospital/:specialtyID/:hospitalID")
+  .get(hospitalsController.getDoctorFromSpecialtyIDServicesAndIDHospital)
   .all(methodNotAllowed);
 module.exports = router;

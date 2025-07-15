@@ -26,6 +26,7 @@ async function makeHospitalsServices() {
       if (result.recordset.length === 0) {
         throw new Error("No hospitals found");
       }
+
       return result.recordset;
     } catch (err) {
       throw new Error(`Error fetching hospitals: ${err.message}`);
@@ -47,10 +48,35 @@ async function makeHospitalsServices() {
       throw new Error(`Error fetching hospitals: ${err.message}`);
     }
   }
+
+  async function getDoctorFromSpecialtyIDServicesAndIDHospital(
+    specialtyID,
+    hospitalID
+  ) {
+    try {
+      const request = pool.request();
+      request.input("SpecialtyID", sql.VarChar(20), specialtyID);
+      request.input("HospitalID", sql.VarChar(20), hospitalID);
+      const result = await request.query(`
+        EXEC GetDoctorsByHospitalAndSpecialty 
+    @HospitalID = ${hospitalID},
+    @SpecialtyID = ${specialtyID};
+      `);
+      console.log("Querying doctors with:", specialtyID, hospitalID);
+
+      if (result.recordset.length === 0) {
+        throw new Error("No doctors found for this specialty");
+      }
+      return result.recordset;
+    } catch (err) {
+      throw new Error(`Error fetching doctors: ${err.message}`);
+    }
+  }
   return {
     getHospitalsPrivateServices,
     getHospitalsPublicServices,
     getSpecialtiesWithHospitalIDServices,
+    getDoctorFromSpecialtyIDServicesAndIDHospital,
   };
 }
 
