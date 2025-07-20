@@ -59,11 +59,11 @@ async function makeHospitalsServices() {
       request.input("HospitalID", sql.VarChar(20), hospitalID);
       const result = await request.query(`
         EXEC GetDoctorsByHospitalAndSpecialty 
-    @HospitalID = ${hospitalID},
-    @SpecialtyID = ${specialtyID};
+    @HospitalID = @HospitalID,
+    @SpecialtyID = @SpecialtyID;
       `);
       console.log("Querying doctors with:", specialtyID, hospitalID);
-
+      console.log("danh sach bác sĩ:", result.recordset);
       if (result.recordset.length === 0) {
         throw new Error("No doctors found for this specialty");
       }

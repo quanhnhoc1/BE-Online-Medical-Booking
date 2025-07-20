@@ -115,7 +115,26 @@ router
   .all(methodNotAllowed);
 
 router
+  .route("/schedule-id")
+  .post(doctorController.getScheduleIDController)
+  .all(methodNotAllowed);
+
+router
   .route("/update-profile")
   .put(verifyToken, userController.updateUserProfile)
+  .all(methodNotAllowed);
+
+router
+  .route("/get-user-profile")
+  .get(verifyToken, userController.GetUserWithUserIDAndIDProfileController)
+  .all(methodNotAllowed);
+
+router
+  .route("/delete-profile-by-id")
+  .delete(verifyToken, userController.deleteUserProfileByIDController)
+  .all(methodNotAllowed);
+router
+  .route("/add-new-user-profile")
+  .post(verifyToken, userController.addNewUserProfileController)
   .all(methodNotAllowed);
 module.exports = router;

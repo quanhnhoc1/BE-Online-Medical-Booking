@@ -16,13 +16,14 @@ const authRoute = require("./routes/auth.routes");
 const addressRoute = require("./routes/address.route");
 app.use(cors());
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
 // Remove the conflicting root route
 // app.get("/", async (req, res) => {
 //   res.json("welcome to my app");
 // });
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/", addressRoute);
+2;
 app.use("/", hospitalsRoute);
 app.use("/", userRoute);
 app.use("/", authRoute);

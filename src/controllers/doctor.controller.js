@@ -12,6 +12,20 @@ async function getScheduleController(req, res, next) {
   }
 }
 
+async function getScheduleIDController(req, res) {
+  try {
+    const date = req.body.date; // nếu gửi qua URL dạng /schedule-id/:date
+    const doctorScheduleID = await makeDoctorServices();
+    const result = await doctorScheduleID.getScheduleIDByDateServices(date);
+
+    return res.status(200).json({ id: result });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 module.exports = {
   getScheduleController,
+  getScheduleIDController,
 };

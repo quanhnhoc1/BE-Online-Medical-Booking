@@ -7,14 +7,15 @@ async function makeUserServices() {
       const request = pool.request().input("UserID", sql.Int, userID);
 
       const result = await request.query(
-        "EXEC GetUserProfileByID @UserID = @UserID;"
+        // "EXEC GetUserProfileByID @UserID = @UserID;"
+        "SELECT * FROM USER_PROFILES where USER_ID = @UserID;"
       );
 
       if (result.recordset.length === 0) {
         throw new Error("User not found");
       }
 
-      return result.recordset[0];
+      return result.recordset;
     } catch (error) {
       throw new Error(`Error fetching user profile: ${error.message}`);
     }
@@ -72,7 +73,7 @@ async function makeUserServices() {
         .input("Email", sql.VarChar(100), loginName);
 
       const result = await request.query(`
-          SELECT acc.*, up.PHONE, up.ADDRESS, up.GENDER, up.BIRTH_DATE, up.ETHNIC, up.CCCD
+          SELECT acc.*, up.FULL_NAME, up.PHONE, up.ADDRESS, up.GENDER, up.BIRTH_DATE, up.ETHNIC, up.CCCD
           FROM accounts acc
           LEFT JOIN USER_PROFILES up ON acc.ACCOUNT_ID = up.USER_ID
           WHERE acc.Email = @Email
@@ -176,9 +177,11 @@ async function makeUserServices() {
       throw new Error(`Error adding appointment: ${error.message}`);
     }
   }
-
   async function UpdateProfileByUserID(UserID, userPayload) {
     try {
+      console.log("UpdateProfileByUserID - UserID:", UserID);
+      console.log("UpdateProfileByUserID - userPayload:", userPayload);
+
       const request = pool
         .request()
         .input("USER_ID", sql.Int, UserID)
@@ -186,14 +189,16 @@ async function makeUserServices() {
         .input("Email", sql.VarChar(100), userPayload.email || "")
         .input("Phone", sql.VarChar(20), userPayload.phone || "")
         .input("Gender", sql.VarChar(10), userPayload.gender || "")
-        .input("BirthDate", sql.Date, userPayload.birthDate || null)
+        .input("BirthDate", sql.Date, userPayload.birthDate ?? null)
         .input("Address", sql.NVarChar(200), userPayload.address || "")
         .input("CCCD", sql.VarChar(20), userPayload.cccd || "")
-        .input("Ethnic", sql.VarChar(50), userPayload.ethnic || "");
+        .input("Ethnic", sql.VarChar(50), userPayload.ethnic || "")
+        .input("ID_PROFILE", sql.Int, userPayload.idProfile ?? null)
+        .input("JOB", sql.NVarChar(100), userPayload.job || "");
 
       const result = await request.query(`
         EXEC UpdateUserProfileByID
-         @USER_ID = @USER_ID,
+          @USER_ID = @USER_ID,
           @FullName = @FullName,
           @Email = @Email,
           @Phone = @Phone,
@@ -201,17 +206,170 @@ async function makeUserServices() {
           @BirthDate = @BirthDate,
           @Address = @Address,
           @CCCD = @CCCD,
-          @Ethnic = @Ethnic;
+          @Ethnic = @Ethnic,
+          @ID_PROFILE = @ID_PROFILE,
+          @JOB = @JOB;
+  
+        SELECT * FROM USER_PROFILES WHERE USER_ID = @USER_ID AND ID_PROFILE = @ID_PROFILE;
       `);
 
-      return {
-        success: true,
-        message: "Cập nhật thông tin thành công",
-        result: result.recordset,
-      };
+      console.log("UpdateProfileByUserID - SQL result:", result);
+
+      if (result.rowsAffected[0] > 0 && result.recordset.length > 0) {
+        return {
+          success: true,
+          message: "Cập nhật thông tin thành công",
+          result: result.recordset,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Không có bản ghi nào được cập nhật.",
+          result: [],
+        };
+      }
     } catch (err) {
-      console.error("Error editing profile:", err);
-      throw new Error(`Error editing profile: ${err.message}`);
+      console.error("Lỗi khi gọi stored procedure:", err);
+      if (err.precedingErrors && err.precedingErrors.length > 0) {
+        console.error("SQL preceding errors:", err.precedingErrors);
+      }
+      return {
+        success: false,
+        message: "Lỗi cập nhật hồ sơ: " + err.message,
+        result: [],
+      };
+    }
+  }
+
+  async function getUserWithUserIDAndIDProfileService(userID, profileID) {
+    try {
+      const request = pool
+        .request()
+        .input("UserID", sql.Int, userID)
+        .input("ProfileID", sql.Int, profileID);
+      const result = await request.query(
+        `exec GetUserWithUserIDAndIDProfile @USER_ID = @UserID, @ID_PROFILE = @ProfileID;`
+      );
+      if (result.recordset.length === 0) {
+        throw { success: false, message: "User not found" };
+      }
+      return { success: true, data: result.recordset[0] };
+    } catch (err) {
+      console.error("Error fetching user with ID:", err);
+      throw { success: false, message: err.message || err };
+    }
+  }
+
+  async function deleteUserProfileByIDService(userID, ProfileID) {
+    try {
+      const request = pool
+        .request()
+        .input("UserID", sql.Int, userID)
+        .input("ProfileID", sql.Int, ProfileID);
+      const result = await request.query(`
+        EXEC deleteUserProfile @USER_ID = @UserID, @ID_PROFILE = @ProfileID;
+      `);
+      console.log("rowsAffected:", result.rowsAffected);
+      if (result.rowsAffected && result.rowsAffected[0] > 0) {
+        return {
+          success: true,
+          message: "User profile deleted successfully",
+          data: result.recordset,
+        };
+      } else {
+        return {
+          success: false,
+          message:
+            "No user profile deleted. Profile may not exist or you do not have permission.",
+          data: result.recordset || null,
+        };
+      }
+    } catch (error) {
+      throw new Error(`Error deleting user profile: ${error.message}`);
+    }
+  }
+  async function addNewUserProfileService(userID, userProfilePayload) {
+    try {
+      const request = pool
+        .request()
+        .input("UserID", sql.Int, userID)
+        .input("FullName", sql.NVarChar(200), userProfilePayload.fullName)
+        .input("Phone", sql.VarChar(20), userProfilePayload.phone)
+        .input("BirthDate", sql.Date, userProfilePayload.birthDate)
+        .input("Address", sql.NVarChar(200), userProfilePayload.address)
+        .input("ETHNIC", sql.NVarChar(20), userProfilePayload.ethnic)
+        .input("CCCD", sql.VarChar(20), userProfilePayload.cccd)
+        .input("JOB", sql.NVarChar(100), userProfilePayload.job)
+        .input("GENDER", sql.NVarChar(20), userProfilePayload.gender);
+
+      const result = await request.query(`
+        EXEC ADDNEWUSERPRROFILE
+          @USER_ID = @UserID,
+          @FULL_NAME = @FullName,
+          @PHONE = @Phone,
+          @BIRTH_DATE = @BirthDate,
+          @ADDRESS = @Address,
+          @ETHNIC = @ETHNIC,
+          @CCCD = @CCCD,
+          @JOB = @JOB,
+          @GENDER = @GENDER;
+      `);
+
+      console.log("SQL result:", result);
+      console.log("rowsAffected:", result.rowsAffected);
+      console.log("recordset:", result.recordset);
+
+      // Kiểm tra dựa trên cấu trúc thực tế từ log
+      // recordset: [ { affectedRows: 1 } ]
+      if (
+        result.recordset &&
+        result.recordset[0] &&
+        result.recordset[0].affectedRows > 0
+      ) {
+        return {
+          success: true,
+          message: "Thêm hồ sơ thành công",
+          result: result.recordset || [],
+        };
+      } else {
+        return {
+          success: false,
+          message: "Thêm hồ sơ thất bại",
+          result: result.recordset || [],
+        };
+      }
+    } catch (err) {
+      console.error("Error adding new user profile:", err);
+      throw new Error(`Error adding new user profile: ${err.message}`);
+    }
+  }
+  async function addNewAppointmentService(profileID, doctorID, scheduleID) {
+    try {
+      const request = pool
+        .request()
+        .input("ProfileID", sql.Int, profileID)
+        .input("DoctorID", sql.Int, doctorID)
+        .input("ScheduleID", sql.Int, scheduleID);
+
+      const result = await request.query(
+        `exec ADDNEWAPPOINTMENT @PROFILE_ID = @ProfileID, @DOCTOR_ID = @DoctorID, @SCHEDULE_ID = @ScheduleID;`
+      );
+      if (result.recordset.length > 0) {
+        return {
+          success: true,
+          message: "Appointment added successfully",
+          data: result.recordset,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Failed to add appointment",
+          result: result.recordset || [],
+        };
+      }
+    } catch (err) {
+      console.error("Error adding new appointment:", err);
+      throw new Error(`Error adding new appointment: ${err.message}`);
     }
   }
 
@@ -222,6 +380,10 @@ async function makeUserServices() {
     getUserProfileServices,
     addAppointmentByUser,
     UpdateProfileByUserID,
+    getUserWithUserIDAndIDProfileService,
+    deleteUserProfileByIDService,
+    addNewUserProfileService,
+    addNewAppointmentService,
   };
 }
 
