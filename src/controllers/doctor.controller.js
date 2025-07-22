@@ -25,7 +25,56 @@ async function getScheduleIDController(req, res) {
   }
 }
 
+async function getDoctorWorkTimeController(req, res, next) {
+  try {
+    const doctorID = req.params.doctorID; // lấy từ URL params
+    const doctorSchedule = await makeDoctorServices();
+    const result =
+      await doctorSchedule.getDoctorWorkTimeByDoctorIDService(doctorID);
+    // Nếu result là mảng (nhiều lịch), format từng phần tử
+    let formatted = [];
+    if (Array.isArray(result)) {
+      formatted = result.map((item) => ({
+        start_time: formatTime(item.START_TIME),
+        end_time: formatTime(item.END_TIME),
+        date: formatDate(item.DATE_OF_MONTH),
+        status: item.STATUS,
+      }));
+    } else if (result) {
+      // Nếu chỉ trả về 1 object
+      formatted = [
+        {
+          start_time: formatTime(result.START_TIME),
+          end_time: formatTime(result.END_TIME),
+          date: formatDate(result.DATE_OF_MONTH),
+          status: result.STATUS,
+        },
+      ];
+    }
+    return res.json({ success: true, data: formatted });
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
+
+function formatTime(dateString) {
+  const date = new Date(dateString);
+  const hh = String(date.getUTCHours()).padStart(2, "0");
+  const mm = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const yyyy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(date.getUTCDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 module.exports = {
   getScheduleController,
   getScheduleIDController,
+  getDoctorWorkTimeController,
 };

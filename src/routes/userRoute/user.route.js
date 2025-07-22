@@ -137,4 +137,9 @@ router
   .route("/add-new-user-profile")
   .post(verifyToken, userController.addNewUserProfileController)
   .all(methodNotAllowed);
+
+router
+  .route("/add-new-appointment")
+  .get(verifyToken, userController.addNewAppointmentController)
+  .all(methodNotAllowed);
 module.exports = router;

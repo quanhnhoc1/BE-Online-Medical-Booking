@@ -42,8 +42,24 @@ async function makeDoctorServices() {
       throw new Error(`Error fetching schedule ID: ${err.message}`);
     }
   }
-
-  return { getScheduleServices, getScheduleIDByDateServices };
+  async function getDoctorWorkTimeByDoctorIDService(doctorID) {
+    try {
+      const request = pool.request().input("doctorID", sql.Int, doctorID);
+      const result = await request.query(
+        `EXEC getStartEnd_timeByDoctorID @doctorID = @doctorID;`
+      );
+      // console.log("getDoctorWorkTimeByDoctorIDService result:", result);
+      return result.recordset || null;
+    } catch (err) {
+      console.error("Error fetching doctor work time:", err);
+      throw new Error(`Error fetching doctor work time: ${err.message}`);
+    }
+  }
+  return {
+    getScheduleServices,
+    getScheduleIDByDateServices,
+    getDoctorWorkTimeByDoctorIDService,
+  };
 }
 
 module.exports = makeDoctorServices;

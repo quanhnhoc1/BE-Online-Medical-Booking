@@ -121,35 +121,6 @@ async function addAppointmentByUserController(req, res, next) {
   }
 }
 
-// async function updateUserProfile(req, res) {
-//   try {
-//     const userServices = await makeUserServices();
-//     const userID = parseInt(req.user.id, 10);
-//     const userPayload = req.body;
-//     const result = await userServices.UpdateProfileByUserID(
-//       userID,
-//       userPayload
-//     );
-//     console.log("userPayload:", userPayload);
-//     console.log("result:", result);
-//     if (!result || !result.result || result.result.length === 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Cập nhật thất bại",
-//         data: result.result || [],
-//       });
-//     } else {
-//       return res.status(200).json({
-//         success: true,
-//         message: "Cập nhật thông tin thành công",
-//         data: result.result,
-//       });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ success: false, message: error.message });
-//   }
-// }
 async function updateUserProfile(req, res) {
   try {
     const userServices = await makeUserServices();
@@ -262,13 +233,48 @@ async function addNewUserProfileController(req, res) {
 async function addNewAppointmentController(req, res) {
   try {
     const userServices = await makeUserServices();
-    const userID = parseInt(req.user.id, 10); // lấy từ token JWT
-    const { doctorID, specialtyID } = req.params; // lấy từ URL params
-    const reponse = await userServices.addNewAppointmentService(
-      userID,
+    const { profileID, doctorID, scheduleID } = req.query; // lấy từ URL params
+
+    // Gọi service để thêm lịch hẹn mới
+    const response = await userServices.addNewAppointmentService(
+      profileID,
       doctorID,
-      specialtyID
+      scheduleID
     );
+    console.log(
+      "profileID:",
+      profileID,
+      "doctorID:",
+      doctorID,
+      "scheduleID:",
+      scheduleID,
+      "affectedRowus"
+    );
+    // Kiểm tra kết quả trả về từ service
+    const affectedRows = response?.recordset?.[0]?.affectedRows;
+    console.log(affectedRows);
+    console.log("recordset:", response.recordset);
+    console.log("recordsets:", response.recordsets);
+
+    const affectedRows1 = response?.recordset?.[0]?.affectedRows;
+    const affectedRows2 = response?.recordsets?.[0]?.[0]?.affectedRows;
+
+    console.log("affectedRows1:", response);
+    console.log("affectedRows2:", response.success);
+    if (response && response.success) {
+      // Thành công
+      return res.status(201).json({
+        success: true,
+        message: "Đặt lịch hẹn thành công!",
+        data: response.data,
+      });
+    } else {
+      // Không có dòng nào bị ảnh hưởng (thất bại)
+      return res.status(400).json({
+        success: false,
+        message: "Đặt lịch hẹn thất bại. Vui lòng kiểm tra lại thông tin!",
+      });
+    }
   } catch (err) {
     console.error("Error adding new appointment:", err);
     return res.status(500).json({ message: err.message });

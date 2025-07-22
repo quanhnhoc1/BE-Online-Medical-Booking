@@ -354,7 +354,8 @@ async function makeUserServices() {
       const result = await request.query(
         `exec ADDNEWAPPOINTMENT @PROFILE_ID = @ProfileID, @DOCTOR_ID = @DoctorID, @SCHEDULE_ID = @ScheduleID;`
       );
-      if (result.recordset.length > 0) {
+      console.log("addNewAppointmentService result:", result);
+      if (result.recordset.length > 0 && result.recordset[0].affectedRows > 0) {
         return {
           success: true,
           message: "Appointment added successfully",
