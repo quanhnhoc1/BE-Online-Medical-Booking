@@ -280,6 +280,37 @@ async function addNewAppointmentController(req, res) {
     return res.status(500).json({ message: err.message });
   }
 }
+async function getListBookingTicketController(req, res) {
+  try {
+    const userServices = await makeUserServices();
+    const userID = parseInt(req.user.id, 10); // lấy từ token JWT
+    const appointmentStatus = req.query.apStatus;
+    const result = await userServices.getListBookingTicketService(
+      userID,
+      appointmentStatus
+    );
+    console.log("result:", result);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Error getting list booking ticket:", err);
+  }
+}
+async function cancelAppointmentController(req, res) {
+  try {
+    const userServices = await makeUserServices();
+    // const userProfileID = parseInt(req.user.id, 10); // lấy từ token JWT
+    const { userProfileID, doctorID, scheduleID } = req.body;
+    const result = await userServices.cancelAppointmentService(
+      userProfileID,
+      doctorID,
+      scheduleID
+    );
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Error canceling appointment:", err);
+    return res.status(500).json({ message: err.message });
+  }
+}
 module.exports = {
   createUser,
   handleLogin,
@@ -291,4 +322,6 @@ module.exports = {
   deleteUserProfileByIDController,
   addNewUserProfileController,
   addNewAppointmentController,
+  getListBookingTicketController,
+  cancelAppointmentController,
 };

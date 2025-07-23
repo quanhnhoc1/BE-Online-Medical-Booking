@@ -142,4 +142,14 @@ router
   .route("/add-new-appointment")
   .get(verifyToken, userController.addNewAppointmentController)
   .all(methodNotAllowed);
+
+router
+  .route("/get-list-appointment")
+  .get(verifyToken, userController.getListBookingTicketController)
+  .all(methodNotAllowed);
+
+router
+  .route("/cancel-appointment")
+  .put(verifyToken, userController.cancelAppointmentController)
+  .all(methodNotAllowed);
 module.exports = router;

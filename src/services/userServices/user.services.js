@@ -374,6 +374,68 @@ async function makeUserServices() {
     }
   }
 
+  async function getListBookingTicketService(userID, appointmentStatus) {
+    try {
+      const request = pool
+        .request()
+        .input("UserID", sql.Int, userID)
+        .input("AppointmentStatus", sql.VarChar(20), appointmentStatus);
+      const result = await request.query(`
+        EXEC getAppointmentsByUserIDAndStatus @userID = @UserID, @status = @AppointmentStatus;
+      `);
+      return result.recordset;
+    } catch (err) {
+      console.error("Error getting list booking ticket:", err);
+      throw new Error(`Error getting list booking ticket: ${err.message}`);
+    }
+  }
+  async function cancelAppointmentService(userProfileID, doctorID, scheduleID) {
+    try {
+      const request = pool
+        .request()
+        .input("userProfileID", sql.Int, userProfileID)
+        .input("DoctorID", sql.Int, doctorID)
+        .input(
+          "ScheduleID",
+          scheduleID ? sql.Int : sql.Int,
+          scheduleID || null
+        );
+
+      const result = await request.query(`
+        EXEC CancelAppointment @PROFILE_ID = @userProfileID, @DOCTOR_ID = @DoctorID, @SCHEDULE_ID = @ScheduleID;
+      `);
+
+      console.log("Recordset:", result.recordset);
+
+      // Kiểm tra message từ stored procedure
+      const message = result.recordset?.[0]?.message || "Unknown result";
+      const affectedRows = result.recordset?.[0]?.affectedRows || 0;
+
+      console.log("Message from stored procedure:", message);
+      console.log("Affected rows:", affectedRows);
+
+      // Kiểm tra kết quả dựa trên message
+      if (message === "huy thanh cong" || affectedRows > 0) {
+        return {
+          success: true,
+          data: result.recordsets?.[0],
+        };
+      } else {
+        return {
+          success: false,
+          result: result.recordset,
+        };
+      }
+    } catch (err) {
+      console.error("Error canceling appointment:", err);
+      return {
+        success: false,
+        message: "Failed to cancel appointment",
+        error: err.message,
+        result: [],
+      };
+    }
+  }
   return {
     registerAccount,
     userLogin,
@@ -385,6 +447,8 @@ async function makeUserServices() {
     deleteUserProfileByIDService,
     addNewUserProfileService,
     addNewAppointmentService,
+    getListBookingTicketService,
+    cancelAppointmentService,
   };
 }
 
