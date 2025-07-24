@@ -49,7 +49,7 @@ async function handleLogin(req, res) {
       const token = jwt.sign(
         {
           id: user.ACCOUNT_ID,
-          fullname: user.FULL_NAME,
+          fullname: user.fullname,
           email: user.EMAIL,
           phone: user.PHONE,
           address: user.ADDRESS,
@@ -71,7 +71,7 @@ async function handleLogin(req, res) {
           us: "asdasd0",
           id: user.ACCOUNT_ID,
           email: user.EMAIL,
-          fullName: user.FULL_NAME,
+          fullName: user.FULLNAME,
           phone: user.PHONE,
           address: user.ADDRESS,
           gender: user.GENDER,

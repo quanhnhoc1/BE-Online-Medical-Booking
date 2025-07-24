@@ -8,6 +8,7 @@ const config = {
   options: {
     trustServerCertificate: true,
     enableArithAbort: true,
+    charset: "utf8",
   },
 };
 const pool = new sql.ConnectionPool(config);

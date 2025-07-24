@@ -38,23 +38,16 @@ async function makeUserServices() {
 
       const request = pool
         .request()
-        .input("FullName", sql.NVarChar(200), userPayload.fullName || "")
+        .input("FullName", sql.NVarChar(255), userPayload.fullName)
         .input("Email", sql.VarChar(100), userPayload.email)
-        .input("Password", sql.VarChar(255), hashedPassword)
-        .input("Phone", sql.VarChar(20), userPayload.phone || "")
-        .input("Gender", sql.VarChar(10), userPayload.gender || "")
-        .input("BirthDate", sql.Date, userPayload.birthDate || null)
-        .input("Address", sql.NVarChar(200), userPayload.address || "");
+        .input("Password", sql.NVarChar(255), hashedPassword);
 
       const result = await request.query(`
         EXEC AddNewUserAccount
         @FullName = @FullName,
         @Email = @Email,
-        @Password = @Password,
-        @Phone = @Phone,
-        @Gender = @Gender,
-        @BirthDate = @BirthDate,
-        @Address = @Address;
+        @Password = @Password
+   
       `);
 
       return {
