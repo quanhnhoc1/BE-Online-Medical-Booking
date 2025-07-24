@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const hospitalsRoute = require("./routes/hospitalsRoute/hospitals.route");
+const hospitalsRoute = require("./routes/hospitals.route");
 const { swaggerUi, specs } = require("../swagger");
 // const { poolConnect, pool, sql } = require("../database.config");
 const {
@@ -11,10 +11,11 @@ const {
 // connect database
 const { conn, sql, pool } = require("../connect");
 const app = express();
-const userRoute = require("./routes/userRoute/user.route");
+const userRoute = require("./routes/user.route");
 const authRoute = require("./routes/auth.routes");
 const addressRoute = require("./routes/address.route");
-const doctorRoute = require("./routes/doctorRoute/doctor.route");
+const doctorRoute = require("./routes/doctor.route");
+const searchRoute = require("./routes/search.route");
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,6 +30,7 @@ app.use("/", hospitalsRoute);
 app.use("/", userRoute);
 app.use("/", authRoute);
 app.use("/", doctorRoute);
+app.use("/", searchRoute);
 // app.use("/api", userRoute);
 app.use(resourceNotFound);
 app.use(handleError);

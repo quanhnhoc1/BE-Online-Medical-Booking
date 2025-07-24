@@ -1,6 +1,6 @@
 const express = require("express");
-const hospitalsController = require("../../controllers/hospitals.controller");
-const { methodNotAllowed } = require("../../controllers/errors.controller");
+const hospitalsController = require("../controllers/hospitals.controller");
+const { methodNotAllowed } = require("../controllers/errors.controller");
 const router = express.Router();
 
 router

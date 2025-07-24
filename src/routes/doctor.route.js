@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const doctorController = require("../../controllers/doctor.controller");
-const { methodNotAllowed } = require("../../controllers/errors.controller");
+const doctorController = require("../controllers/doctor.controller");
+const { methodNotAllowed } = require("../controllers/errors.controller");
 
 router
   .route("/get-word-time-doctor/:doctorID")

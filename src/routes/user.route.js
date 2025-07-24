@@ -1,8 +1,8 @@
 const express = require("express");
-const userController = require("../../controllers/user.controller");
-const { methodNotAllowed } = require("../../controllers/errors.controller");
-const { verifyToken } = require("../../middlewares/auth.Middlewares");
-const doctorController = require("../../controllers/doctor.controller");
+const userController = require("../controllers/user.controller");
+const { methodNotAllowed } = require("../controllers/errors.controller");
+const { verifyToken } = require("../middlewares/auth.Middlewares");
+const doctorController = require("../controllers/doctor.controller");
 const router = express.Router();
 
 /**
