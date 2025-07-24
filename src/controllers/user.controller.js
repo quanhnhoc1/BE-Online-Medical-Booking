@@ -1,6 +1,14 @@
 const makeUserServices = require("../services/userServices/user.services");
 const jwt = require("jsonwebtoken");
 const ApiError = require("../api-error");
+const { OAuth2Client } = require("google-auth-library");
+const { sql, conn } = require("../../connect");
+
+// Khởi tạo Google OAuth client với fallback
+const GOOGLE_CLIENT_ID =
+  process.env.GOOGLE_CLIENT_ID ||
+  "419237871729-6cv0dkr0tqeqhtmgd734t0srv2vc0mp9.apps.googleusercontent.com";
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = "1111";
 async function createUser(req, res, next) {
@@ -311,6 +319,112 @@ async function cancelAppointmentController(req, res) {
     return res.status(500).json({ message: err.message });
   }
 }
+
+const handleGoogleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token is required" });
+    }
+
+    console.log("Received token type:", typeof token);
+    console.log("Token length:", token.length);
+    console.log("Token starts with:", token.substring(0, 50));
+
+    let userInfo = null;
+
+    // Kiểm tra xem token có phải là ID token hay authorization code
+    if (token.includes(".")) {
+      // ID Token flow
+      console.log("Processing as ID token");
+      try {
+        const ticket = await client.verifyIdToken({
+          idToken: token,
+          audience: GOOGLE_CLIENT_ID,
+        });
+        userInfo = ticket.getPayload();
+      } catch (idTokenError) {
+        console.error("ID token verification failed:", idTokenError);
+        return res.status(400).json({ message: "Invalid ID token" });
+      }
+    } else {
+      // Authorization Code flow
+      console.log("Processing as authorization code");
+      try {
+        // Exchange authorization code for tokens
+        const { tokens } = await client.getToken(token);
+        const ticket = await client.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: GOOGLE_CLIENT_ID,
+        });
+        userInfo = ticket.getPayload();
+      } catch (codeError) {
+        console.error("Authorization code exchange failed:", codeError);
+        return res.status(400).json({ message: "Invalid authorization code" });
+      }
+    }
+
+    const { email, name, picture, sub: googleId } = userInfo;
+
+    // Check if user exists in database
+    const pool = await conn;
+    const userCheckQuery = `
+      SELECT * FROM ACCOUNTS 
+      WHERE EMAIL = @email
+    `;
+
+    const userCheckResult = await pool
+      .request()
+      .input("email", sql.VarChar, email)
+      .query(userCheckQuery);
+
+    let user = userCheckResult.recordset[0];
+
+    if (!user) {
+      // Create new user if doesn't exist
+      const insertUserQuery = `
+        INSERT INTO ACCOUNTS (EMAIL, PASSWORD, ROLE, CREATE_AT)
+        OUTPUT INSERTED.*
+        VALUES (@email, NULL, 'user', GETDATE())
+      `;
+
+      const insertResult = await pool
+        .request()
+        .input("email", sql.VarChar, email)
+        .query(insertUserQuery);
+
+      user = insertResult.recordset[0];
+    }
+
+    // Generate JWT token
+    const jwtToken = jwt.sign(
+      {
+        id: user.ACCOUNT_ID,
+        email: user.EMAIL,
+        role: user.ROLE,
+        fullname: name, // Sử dụng name từ Google
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.json({
+      message: "Google login successful",
+      token: jwtToken,
+      user: {
+        id: user.ACCOUNT_ID,
+        email: user.EMAIL,
+        fullName: name, // Sử dụng name từ Google
+        role: user.ROLE,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ message: "Google login failed" });
+  }
+};
+
 module.exports = {
   createUser,
   handleLogin,
@@ -324,4 +438,5 @@ module.exports = {
   addNewAppointmentController,
   getListBookingTicketController,
   cancelAppointmentController,
+  handleGoogleLogin,
 };

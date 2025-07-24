@@ -152,4 +152,36 @@ router
   .route("/cancel-appointment")
   .put(verifyToken, userController.cancelAppointmentController)
   .all(methodNotAllowed);
+
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Đăng nhập bằng Google
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Google ID token
+ *     responses:
+ *       200:
+ *         description: Đăng nhập thành công, trả về token
+ *       400:
+ *         description: Token không hợp lệ
+ *       500:
+ *         description: Lỗi server
+ */
+router
+  .route("/auth/google")
+  .post(userController.handleGoogleLogin)
+  .all(methodNotAllowed);
+
 module.exports = router;
