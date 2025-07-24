@@ -1,4 +1,4 @@
-const { pool, sql } = require("../../../connect");
+const { pool, sql } = require("../../connect");
 async function makeHospitalsServices() {
   async function getHospitalsPrivateServices() {
     try {

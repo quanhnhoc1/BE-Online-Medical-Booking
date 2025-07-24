@@ -1,5 +1,5 @@
 const ApiError = require("../api-error");
-const makeDoctorServices = require("../services/doctorServices/doctor.services");
+const makeDoctorServices = require("../services//doctor.services");
 async function getScheduleController(req, res, next) {
   try {
     const id = Number(req.params.doctorID);

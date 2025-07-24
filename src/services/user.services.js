@@ -1,4 +1,4 @@
-const { pool, sql } = require("../../../connect");
+const { pool, sql } = require("../../connect");
 const bcrypt = require("bcrypt");
 
 async function makeUserServices() {

@@ -1,4 +1,4 @@
-const { pool, sql } = require("../../../connect");
+const { pool, sql } = require("../../connect");
 async function makeDoctorServices() {
   async function getScheduleServices(doctorID) {
     try {

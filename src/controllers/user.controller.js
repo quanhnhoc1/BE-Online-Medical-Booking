@@ -1,4 +1,4 @@
-const makeUserServices = require("../services/userServices/user.services");
+const makeUserServices = require("../services/user.services");
 const jwt = require("jsonwebtoken");
 const ApiError = require("../api-error");
 const { OAuth2Client } = require("google-auth-library");

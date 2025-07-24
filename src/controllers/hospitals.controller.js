@@ -1,4 +1,4 @@
-const makeHospitalsServices = require("../services/hospitalsServices/hospitals.Services");
+const makeHospitalsServices = require("../services//hospitals.Services");
 const ApiError = require("../api-error");
 
 async function getHospitalsPrivateController(req, res, next) {
