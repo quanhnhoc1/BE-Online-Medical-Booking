@@ -11,4 +11,8 @@ router
   .route("/get-all-doctors")
   .get(doctorController.getAllDoctorsController)
   .all(methodNotAllowed);
+router
+  .route("/delete-doctor-by-id/:doctorID")
+  .get(doctorController.deleteDoctorByIdController)
+  .all(methodNotAllowed);
 module.exports = router;

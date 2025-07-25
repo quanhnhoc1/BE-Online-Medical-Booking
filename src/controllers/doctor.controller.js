@@ -83,9 +83,32 @@ async function getAllDoctorsController(req, res, next) {
     return next(new ApiError(500, err.message));
   }
 }
+
+async function deleteDoctorByIdController(req, res, next) {
+  try {
+    const doctorID = req.params.doctorID;
+    const doctorServices = await makeDoctorServices();
+    const result = await doctorServices.deleteDoctorById(doctorID);
+    console.log(result.success);
+    if (result.success == false) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found or already deleted.",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Doctor deleted successfully controller.",
+    });
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
 module.exports = {
   getScheduleController,
   getScheduleIDController,
   getDoctorWorkTimeController,
   getAllDoctorsController,
+  deleteDoctorByIdController,
 };

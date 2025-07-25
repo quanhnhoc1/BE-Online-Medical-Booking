@@ -65,11 +65,36 @@ async function makeDoctorServices() {
       throw new Error(`Error fetching all doctors: ${err.message}`);
     }
   }
+
+  async function deleteDoctorById(doctorID) {
+    try {
+      const request = pool.request().input("doctorID", sql.Int, doctorID);
+      const result = await request.query(
+        "exec deleteDoctorByID @DOCTOR_ID = @doctorID"
+      );
+      const affectedRows = result.recordset[0]?.affectedRows || 0;
+      console.log(affectedRows);
+      if (affectedRows > 0) {
+        return {
+          success: true,
+          message: "Doctor deleted successfully.",
+        };
+      } else {
+        return {
+          success: false,
+          message: "Doctor not found or already deleted.",
+        };
+      }
+    } catch (err) {
+      throw new Error(`Error deleting doctor: ${err.message}`);
+    }
+  }
   return {
     getScheduleServices,
     getScheduleIDByDateServices,
     getDoctorWorkTimeByDoctorIDService,
     getAllDoctors,
+    deleteDoctorById,
   };
 }
 
