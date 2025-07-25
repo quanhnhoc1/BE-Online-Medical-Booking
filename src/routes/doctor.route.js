@@ -7,5 +7,8 @@ router
   .route("/get-word-time-doctor/:doctorID")
   .get(doctorController.getDoctorWorkTimeController)
   .all(methodNotAllowed);
-
+router
+  .route("/get-all-doctors")
+  .get(doctorController.getAllDoctorsController)
+  .all(methodNotAllowed);
 module.exports = router;

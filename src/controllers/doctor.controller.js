@@ -1,5 +1,5 @@
 const ApiError = require("../api-error");
-const makeDoctorServices = require("../services//doctor.services");
+const makeDoctorServices = require("../services/doctor.services");
 async function getScheduleController(req, res, next) {
   try {
     const id = Number(req.params.doctorID);
@@ -73,8 +73,19 @@ function formatDate(dateString) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+async function getAllDoctorsController(req, res, next) {
+  try {
+    const doctorServices = await makeDoctorServices();
+    const result = await doctorServices.getAllDoctors();
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
 module.exports = {
   getScheduleController,
   getScheduleIDController,
   getDoctorWorkTimeController,
+  getAllDoctorsController,
 };

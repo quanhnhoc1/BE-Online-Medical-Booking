@@ -55,10 +55,21 @@ async function makeDoctorServices() {
       throw new Error(`Error fetching doctor work time: ${err.message}`);
     }
   }
+
+  async function getAllDoctors() {
+    try {
+      const request = pool.request();
+      const result = await request.query("exec getAllDoctors");
+      return result.recordset;
+    } catch (err) {
+      throw new Error(`Error fetching all doctors: ${err.message}`);
+    }
+  }
   return {
     getScheduleServices,
     getScheduleIDByDateServices,
     getDoctorWorkTimeByDoctorIDService,
+    getAllDoctors,
   };
 }
 
