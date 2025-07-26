@@ -72,11 +72,34 @@ async function makeHospitalsServices() {
       throw new Error(`Error fetching doctors: ${err.message}`);
     }
   }
+
+  async function getAllHospitals() {
+    try {
+      const request = pool.request(); // không truyền query vào đây
+      const result = await request.query("SELECT id, name FROM HOSPITALS");
+      return result.recordset;
+    } catch (err) {
+      throw new Error(`Error fetching hospitals: ${err.message}`);
+    }
+  }
+  async function getAllSpecialties() {
+    try {
+      const request = pool.request();
+      const result = await request.query(
+        "SELECT SPECIALTY_ID AS specialtyID, NAME AS specialtyName FROM SPECIALTIES"
+      );
+      return result.recordset;
+    } catch (err) {
+      throw new Error(`Error fetching hospitals: ${err.message}`);
+    }
+  }
   return {
     getHospitalsPrivateServices,
     getHospitalsPublicServices,
     getSpecialtiesWithHospitalIDServices,
     getDoctorFromSpecialtyIDServicesAndIDHospital,
+    getAllHospitals,
+    getAllSpecialties,
   };
 }
 

@@ -15,4 +15,12 @@ router
   .route("/delete-doctor-by-id/:doctorID")
   .get(doctorController.deleteDoctorByIdController)
   .all(methodNotAllowed);
+router
+  .route("/update-doctor-by-id/:doctorID")
+  .post(doctorController.updateDoctorProfileController)
+  .all(methodNotAllowed);
+router
+  .route("/update-doctor-profile/:doctorID")
+  .put(doctorController.updateDoctorProfileController)
+  .all(methodNotAllowed);
 module.exports = router;

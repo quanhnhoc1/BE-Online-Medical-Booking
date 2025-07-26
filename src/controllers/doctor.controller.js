@@ -105,10 +105,37 @@ async function deleteDoctorByIdController(req, res, next) {
     return next(new ApiError(500, err.message));
   }
 }
+
+async function updateDoctorProfileController(req, res, next) {
+  try {
+    const doctorID = req.params.doctorID;
+    const doctorPayLoad = req.body;
+    const doctorServices = await makeDoctorServices();
+    const result = await doctorServices.updateDoctorProfile(
+      doctorID,
+      doctorPayLoad
+    );
+    console.log("Update result:", result);
+    if (result.updateDoctor > 0 || result.updateAccount > 0) {
+      return res.status(200).json({
+        success: true,
+        message: "Doctor profile updated successfully.",
+      });
+    }
+    return res.status(404).json({
+      success: false,
+      message: "Doctor profile updated not success.",
+    });
+  } catch (err) {
+    console.error("Error updating doctor profile:", err);
+    return next(new ApiError(500, err.message));
+  }
+}
 module.exports = {
   getScheduleController,
   getScheduleIDController,
   getDoctorWorkTimeController,
   getAllDoctorsController,
   deleteDoctorByIdController,
+  updateDoctorProfileController,
 };

@@ -53,10 +53,31 @@ async function getDoctorFromSpecialtyIDServicesAndIDHospital(req, res, next) {
     return next(new ApiError(500, err.message));
   }
 }
-
+async function getAllHospitalsController(req, res, next) {
+  try {
+    const hospitalsServices = await makeHospitalsServices();
+    const result = await hospitalsServices.getAllHospitals();
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
+async function getAllSpecialtiesController(req, res, next) {
+  try {
+    const hospitalsServices = await makeHospitalsServices();
+    const result = await hospitalsServices.getAllSpecialties();
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return next(new ApiError(500, err.message));
+  }
+}
 module.exports = {
   getHospitalsPrivateController,
   getHospitalsPublicController,
   getSpecialtiesWithHospitalIDController,
   getDoctorFromSpecialtyIDServicesAndIDHospital,
+  getAllHospitalsController,
+  getAllSpecialtiesController,
 };

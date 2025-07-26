@@ -89,12 +89,50 @@ async function makeDoctorServices() {
       throw new Error(`Error deleting doctor: ${err.message}`);
     }
   }
+
+  async function updateDoctorProfile(doctorID, doctorPayLoad) {
+    try {
+      const request = pool
+        .request()
+        .input("doctorID", sql.Int, doctorID)
+        .input("fullName", sql.NVarChar(255), doctorPayLoad.fullName)
+        .input("phone", sql.VarChar(20), doctorPayLoad.phone)
+        .input("email", sql.VarChar(100), doctorPayLoad.email)
+        .input("degree", sql.NVarChar(100), doctorPayLoad.degree)
+        .input("specialtyID", sql.NVarChar(255), doctorPayLoad.specialtyID)
+        .input("hospitalID", sql.NVarChar(255), doctorPayLoad.hospitalID)
+        .input("status", sql.VarChar(10), doctorPayLoad.status);
+
+      const result = await request.query(
+        `EXEC updateDoctorInfor
+    @doctorID = @doctorID,
+    @fullName = @fullName,
+    @phone = @phone,
+    @hospitalID = @hospitalID,
+    @specialtyID = @specialtyID,
+    @degree = @degree,
+    @email = @email,
+    @status = @status`
+      );
+
+      console.log("Update result:", result.recordset[0]?.affectedDoctorProfile);
+
+      return {
+        updateDoctor: result.recordset[0]?.affectedDoctorProfile || 0,
+        updateAccount: result.recordset[0]?.affectedAccount || 0,
+      };
+    } catch (err) {
+      throw new Error(`Error updating doctor profile: ${err.message}`);
+    }
+  }
+
   return {
     getScheduleServices,
     getScheduleIDByDateServices,
     getDoctorWorkTimeByDoctorIDService,
     getAllDoctors,
     deleteDoctorById,
+    updateDoctorProfile,
   };
 }
 

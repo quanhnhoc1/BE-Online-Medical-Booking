@@ -19,4 +19,12 @@ router
   .route("/get-doctor-by-specialty-and-hospital/:specialtyID/:hospitalID")
   .get(hospitalsController.getDoctorFromSpecialtyIDServicesAndIDHospital)
   .all(methodNotAllowed);
+router
+  .route("/get-all-hospitals")
+  .get(hospitalsController.getAllHospitalsController)
+  .all(methodNotAllowed);
+router
+  .route("/get-all-specialties")
+  .get(hospitalsController.getAllSpecialtiesController)
+  .all(methodNotAllowed);
 module.exports = router;
