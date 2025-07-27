@@ -119,15 +119,47 @@ async function updateDoctorProfileController(req, res, next) {
     if (result.updateDoctor > 0 || result.updateAccount > 0) {
       return res.status(200).json({
         success: true,
-        message: "Doctor profile updated successfully.",
+        message: "Doctor profile updated successfully controller.",
       });
     }
     return res.status(404).json({
       success: false,
-      message: "Doctor profile updated not success.",
+      message: "Doctor profile updated not success controller.",
     });
   } catch (err) {
     console.error("Error updating doctor profile:", err);
+    return next(new ApiError(500, err.message));
+  }
+}
+
+async function addNewDoctorController(req, res, next) {
+  try {
+    const doctorPayLoad = req.body;
+    const doctorServices = await makeDoctorServices();
+    const result = await doctorServices.addNewDoctor(doctorPayLoad);
+
+    if (result.success === true) {
+      return res.status(200).json({
+        success: true,
+        message: "Doctor added successfully.",
+      });
+    }
+    return res.status(404).json({
+      success: false,
+      message: "Doctor not added.",
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+async function getDoctorsByHospitalIDController(req, res, next) {
+  try {
+    const hospitalID = req.params.hospitalID;
+    const doctorServices = await makeDoctorServices();
+    const result = await doctorServices.getDoctorsByHospitalID(hospitalID);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
     return next(new ApiError(500, err.message));
   }
 }
@@ -138,4 +170,6 @@ module.exports = {
   getAllDoctorsController,
   deleteDoctorByIdController,
   updateDoctorProfileController,
+  addNewDoctorController,
+  getDoctorsByHospitalIDController,
 };

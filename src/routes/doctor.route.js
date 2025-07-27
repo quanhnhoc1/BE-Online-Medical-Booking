@@ -23,4 +23,13 @@ router
   .route("/update-doctor-profile/:doctorID")
   .put(doctorController.updateDoctorProfileController)
   .all(methodNotAllowed);
+
+router
+  .route("/add-new-doctor-profile")
+  .post(doctorController.addNewDoctorController)
+  .all(methodNotAllowed);
+router
+  .route("/get-doctors-by-hospital-id/:hospitalID")
+  .get(doctorController.getDoctorsByHospitalIDController)
+  .all(methodNotAllowed);
 module.exports = router;

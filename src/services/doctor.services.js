@@ -101,7 +101,8 @@ async function makeDoctorServices() {
         .input("degree", sql.NVarChar(100), doctorPayLoad.degree)
         .input("specialtyID", sql.NVarChar(255), doctorPayLoad.specialtyID)
         .input("hospitalID", sql.NVarChar(255), doctorPayLoad.hospitalID)
-        .input("status", sql.VarChar(10), doctorPayLoad.status);
+        .input("status", sql.VarChar(10), doctorPayLoad.status)
+        .input("address", sql.NVarChar(255), doctorPayLoad.address);
 
       const result = await request.query(
         `EXEC updateDoctorInfor
@@ -112,7 +113,8 @@ async function makeDoctorServices() {
     @specialtyID = @specialtyID,
     @degree = @degree,
     @email = @email,
-    @status = @status`
+    @status = @status,
+    @address = @address`
       );
 
       console.log("Update result:", result.recordset[0]?.affectedDoctorProfile);
@@ -125,7 +127,61 @@ async function makeDoctorServices() {
       throw new Error(`Error updating doctor profile: ${err.message}`);
     }
   }
-
+  async function addNewDoctor(doctorPayLoad) {
+    try {
+      const request = pool
+        .request()
+        .input("fullName", sql.NVarChar(255), doctorPayLoad.fullName)
+        .input("email", sql.VarChar(100), doctorPayLoad.email)
+        .input("phone", sql.VarChar(20), doctorPayLoad.phone)
+        .input("gender", sql.VarChar(10), doctorPayLoad.gender)
+        .input("degree", sql.NVarChar(100), doctorPayLoad.degree)
+        .input("hospitalID", sql.NVarChar(255), doctorPayLoad.hospitalID)
+        .input("specialtyID", sql.NVarChar(255), doctorPayLoad.specialtyID)
+        .input("address", sql.NVarChar(255), doctorPayLoad.address)
+        .input("desc", sql.NVarChar(255), doctorPayLoad.desc);
+      // .input("birthday", sql.Date, doctorPayLoad.birthday);
+      const result = await request.query(
+        `exec addNewDoctorRole   @fullName = @fullName,
+    @email = @email,
+    @phone = @phone,
+    @gender = @gender,
+    @degree = @degree,
+    @hospitalID = @hospitalID,
+    @specialtyID = @specialtyID,
+    @desc = @desc,
+    @address = @address`
+        // @birthday = @birthday;`
+      );
+      const affectedRows = result.recordset[0]?.affectedRows || 0;
+      if (affectedRows > 0) {
+        return {
+          success: true,
+          message: "Doctor added successfully.",
+        };
+      } else {
+        return {
+          success: false,
+          message: "Doctor not added.",
+        };
+      }
+    } catch (err) {
+      throw new Error(`Error adding new doctor: ${err.message}`);
+    }
+  }
+  async function getDoctorsByHospitalID(hospitalID) {
+    try {
+      const request = pool
+        .request()
+        .input("hospitalID", sql.NVarChar(10), hospitalID);
+      const result = await request.query(
+        "exec getDoctorsByHospitalID @hospitalID = @hospitalID"
+      );
+      return result.recordset;
+    } catch (err) {
+      throw new Error(`Error fetching doctors by hospital ID: ${err.message}`);
+    }
+  }
   return {
     getScheduleServices,
     getScheduleIDByDateServices,
@@ -133,6 +189,8 @@ async function makeDoctorServices() {
     getAllDoctors,
     deleteDoctorById,
     updateDoctorProfile,
+    addNewDoctor,
+    getDoctorsByHospitalID,
   };
 }
 
